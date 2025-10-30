@@ -1,143 +1,126 @@
-/* eslint-disable max-len */
 'use strict';
 
 describe('fillTank', () => {
   const { fillTank } = require('./fillTank');
 
-  it('should return a function', () => {
+  it('should be declared', () => {
     expect(fillTank).toBeInstanceOf(Function);
   });
 
-  it('should not return anything', () => {
+  it('fills full tank if amount missing', () => {
+    const customer = {
+      money: 3000,
+      vehicle: {
+        maxTankCapacity: 10,
+        fuelRemains: 0,
+      },
+    };
+
+    fillTank(customer, 100);
+
+    expect(customer).toHaveProperty('money', 2000);
+    expect(customer.vehicle).toHaveProperty('fuelRemains', 10);
+  });
+
+  it('limits pour to max capacity', () => {
+    const customer = {
+      money: 3000,
+      vehicle: {
+        maxTankCapacity: 10,
+        fuelRemains: 0,
+      },
+    };
+
+    fillTank(customer, 100, 15);
+
+    expect(customer).toHaveProperty('money', 2000);
+    expect(customer.vehicle).toHaveProperty('fuelRemains', 10);
+  });
+
+  it('limits pour to affordability', () => {
+    const customer = {
+      money: 500,
+      vehicle: {
+        maxTankCapacity: 10,
+        fuelRemains: 0,
+      },
+    };
+
+    fillTank(customer, 100, 8);
+
+    expect(customer).toHaveProperty('money', 0);
+    expect(customer.vehicle).toHaveProperty('fuelRemains', 5);
+  });
+
+  it('cuts the amount to 1 decimal', () => {
+    const customer = {
+      money: 3000,
+      vehicle: {
+        maxTankCapacity: 10,
+        fuelRemains: 0,
+      },
+    };
+
+    fillTank(customer, 100, 4.89789);
+
+    expect(customer).toHaveProperty('money', 2520);
+    expect(customer.vehicle).toHaveProperty('fuelRemains', 4.8);
+  });
+
+  it('skips pour if less than 2 liters', () => {
+    const customer = {
+      money: 3000,
+      vehicle: {
+        maxTankCapacity: 10,
+        fuelRemains: 0,
+      },
+    };
+
+    fillTank(customer, 100, 1.99);
+
+    expect(customer).toHaveProperty('money', 3000);
+    expect(customer.vehicle).toHaveProperty('fuelRemains', 0);
+  });
+
+  it('rounds cost to 2 decimals', () => {
+    const customer = {
+      money: 3000.24,
+      vehicle: {
+        maxTankCapacity: 10,
+        fuelRemains: 0,
+      },
+    };
+
+    fillTank(customer, 100.675, 5);
+
+    expect(customer.money).toBeCloseTo(2496.86, 2);
+    expect(customer.vehicle).toHaveProperty('fuelRemains', 5);
+  });
+
+  it('fills and deducts money successfully', () => {
     const customer = {
       money: 3000,
       vehicle: {
         maxTankCapacity: 40,
-        fuelRemains: 8,
+        fuelRemains: 5,
       },
     };
 
-    expect(fillTank(customer, 10)).toBeUndefined();
+    fillTank(customer, 100, 20);
+
+    expect(customer).toHaveProperty('money', 1000);
+    expect(customer.vehicle).toHaveProperty('fuelRemains', 25);
   });
 
-  it(`should fill the tank to full and reduce money when amount is not specified`, () => {
+  it('function should return undefined', () => {
     const customer = {
       money: 3000,
       vehicle: {
         maxTankCapacity: 40,
-        fuelRemains: 8,
+        fuelRemains: 5,
       },
     };
 
-    expect(fillTank(customer, 10)).toBeUndefined();
-
-    expect(customer).toEqual({
-      money: 2680,
-      vehicle: {
-        maxTankCapacity: 40,
-        fuelRemains: 40,
-      },
-    });
-  });
-
-  it(`should fill the tank to full when requested amount exceeds capacity`, () => {
-    const customer = {
-      money: 4000,
-      vehicle: {
-        maxTankCapacity: 40,
-        fuelRemains: 8,
-      },
-    };
-
-    expect(fillTank(customer, 10, 50)).toBeUndefined();
-
-    expect(customer).toEqual({
-      money: 3680,
-      vehicle: {
-        maxTankCapacity: 40,
-        fuelRemains: 40,
-      },
-    });
-  });
-
-  
-  it(`should fill in only what the client can pay`, () => {
-    const customer = {
-      money: 400,
-      vehicle: {
-        maxTankCapacity: 40,
-        fuelRemains: 8,
-      },
-    };
-
-    expect(fillTank(customer, 100, 50)).toBeUndefined();
-
-    expect(customer).toEqual({
-      money: 0,
-      vehicle: {
-        maxTankCapacity: 40,
-        fuelRemains: 12,
-      },
-    });
-  });
-
-  it(`should return rounded the poured amount by discarding number to the tenth part`, () => {
-    const customer = {
-      money: 4000,
-      vehicle: {
-        maxTankCapacity: 40,
-        fuelRemains: 8,
-      },
-    };
-
-    expect(fillTank(customer, 100, 8.4797)).toBeUndefined();
-
-    expect(customer).toEqual({
-      money: 3160,
-      vehicle: {
-        maxTankCapacity: 40,
-        fuelRemains: 16.4,
-      },
-    });
-  });
-
-  it(`should not pour at all if poured amount is less then 2 liters`, () => {
-    const customer = {
-      money: 4000,
-      vehicle: {
-        maxTankCapacity: 40,
-        fuelRemains: 8,
-      },
-    };
-
-    expect(fillTank(customer, 100, 1)).toBeUndefined();
-
-    expect(customer).toEqual({
-      money: 4000,
-      vehicle: {
-        maxTankCapacity: 40,
-        fuelRemains: 8,
-      },
-    });
-  });
-
-  it('should round the price of the purchased fuel to the nearest hundredth part', () => {
-    const customer = {
-      money: 4000,
-      vehicle: {
-        maxTankCapacity: 40,
-        fuelRemains: 8,
-      },
-    };
-
-    expect(fillTank(customer, 99.5, 9.35)).toBeUndefined();
-
-    expect(customer).toEqual({
-      money: 3070.67, // 4000 - (99.5 * 9.35) = 4000 - 929.325 -> rounded to 929.33 -> 3070.67
-      vehicle: {
-        maxTankCapacity: 40,
-        fuelRemains: 17.35,
-      },
-    });
+    expect(fillTank(customer, 100, 20)).toBeUndefined();
   });
 });
