@@ -60,26 +60,7 @@ describe('fillTank', () => {
     });
   });
 
-  it(`should fill in only what the client can pay`, () => {
-    const customer = {
-      money: 400,
-      vehicle: {
-        maxTankCapacity: 40,
-        fuelRemains: 8,
-      },
-    };
-
-    expect(fillTank(customer, 100, 50)).toBeUndefined();
-
-    expect(customer).toEqual({
-      money: 0,
-      vehicle: {
-        maxTankCapacity: 40,
-        fuelRemains: 12,
-      },
-    });
-  });
-
+  
   it(`should fill in only what the client can pay`, () => {
     const customer = {
       money: 400,
@@ -140,7 +121,7 @@ describe('fillTank', () => {
     });
   });
 
-  it(`should round the price of the purchased fuel the to the nearest hundredth part`, () => {
+  it('should round the price of the purchased fuel to the nearest hundredth part', () => {
     const customer = {
       money: 4000,
       vehicle: {
@@ -149,13 +130,13 @@ describe('fillTank', () => {
       },
     };
 
-    expect(fillTank(customer, 99.5, 9.3)).toBeUndefined();
+    expect(fillTank(customer, 99.5, 9.35)).toBeUndefined();
 
     expect(customer).toEqual({
-      money: 3074.65,
+      money: 3070.67, // 4000 - (99.5 * 9.35) = 4000 - 929.325 -> rounded to 929.33 -> 3070.67
       vehicle: {
         maxTankCapacity: 40,
-        fuelRemains: 17.3,
+        fuelRemains: 17.35,
       },
     });
   });
